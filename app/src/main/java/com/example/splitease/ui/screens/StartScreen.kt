@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.res.stringResource
+import com.example.splitease.R
 import com.example.splitease.navigation.Screen
 import com.example.splitease.ui.theme.SplitEaseTheme
 
@@ -58,7 +60,7 @@ fun StartScreen(navController: NavController) {
                 Box(modifier = Modifier.size(90.dp)) {
                     Icon(
                         imageVector = Icons.Default.ReceiptLong,
-                        contentDescription = "Receipt Logo",
+                        contentDescription = stringResource(R.string.receipt_logo_desc),
                         modifier = Modifier.fillMaxSize(),
                         tint = Color.White
                     )
@@ -74,7 +76,7 @@ fun StartScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Check",
+                            contentDescription = stringResource(R.string.check_icon_desc),
                             modifier = Modifier.size(24.dp),
                             tint = Color(0xFF6B9BFA) // Darker green/blue inside
                         )
@@ -85,7 +87,7 @@ fun StartScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "SplitEase",
+                text = stringResource(R.string.app_name),
                 color = Color.White,
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold
@@ -96,7 +98,7 @@ fun StartScreen(navController: NavController) {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                placeholder = { Text("Enter name", color = Color.White) },
+                placeholder = { Text(stringResource(R.string.enter_name), color = Color.White) },
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
                     focusedBorderColor = Color.White,
@@ -126,7 +128,7 @@ fun StartScreen(navController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF0F4FF)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Get Started", color = Color(0xFF4C84FA), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.get_started), color = Color(0xFF4C84FA), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

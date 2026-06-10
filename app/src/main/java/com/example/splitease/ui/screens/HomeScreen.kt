@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.res.stringResource
+import com.example.splitease.R
 import com.example.splitease.navigation.Screen
 import com.example.splitease.ui.theme.SplitEaseTheme
 
@@ -59,7 +61,7 @@ fun HomeScreenContent(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("SplitEase", fontWeight = FontWeight.Bold, color = Color(0xFF1E3A8A)) },
+                title = { Text(stringResource(R.string.app_name), fontWeight = FontWeight.Bold, color = Color(0xFF1E3A8A)) },
                 navigationIcon = {
                     // Placeholder icon or logo can go here if needed
                 },
@@ -70,7 +72,7 @@ fun HomeScreenContent(
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(horizontal = 24.dp).fillMaxSize()) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Hi, $name \uD83D\uDC4B", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1E3A8A))
+            Text(stringResource(R.string.hi_user, name), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1E3A8A))
             
             Spacer(modifier = Modifier.height(32.dp))
             
@@ -83,13 +85,13 @@ fun HomeScreenContent(
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C84FA)),
                 shape = RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add", tint = Color.White)
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_icon_desc), tint = Color.White)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Create New Split", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(R.string.create_new_split), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
-            Text("Recent Splits", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.recent_splits), fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.height(16.dp))
             
             if (historyItems.isEmpty()) {
@@ -100,19 +102,19 @@ fun HomeScreenContent(
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
                             imageVector = Icons.Default.ReceiptLong,
-                            contentDescription = "Empty History",
+                            contentDescription = stringResource(R.string.empty_history_desc),
                             modifier = Modifier.size(64.dp),
                             tint = Color.LightGray
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
-                            text = "No recent splits yet.",
+                            text = stringResource(R.string.no_recent_splits),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Medium,
                             color = Color.Gray
                         )
                         Text(
-                            text = "Tap 'Create New Split' to get started!",
+                            text = stringResource(R.string.tap_to_get_started),
                             fontSize = 14.sp,
                             color = Color.LightGray,
                             textAlign = TextAlign.Center
@@ -151,7 +153,7 @@ fun SplitHistoryCard(title: String, status: String, statusColor: Color, amount: 
                 Text(text = title, fontSize = 18.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row {
-                    Text(text = "Status: ", fontSize = 14.sp, color = Color.Gray)
+                    Text(text = stringResource(R.string.status_label), fontSize = 14.sp, color = Color.Gray)
                     Text(text = status, fontSize = 14.sp, color = statusColor, fontWeight = FontWeight.Medium)
                 }
             }

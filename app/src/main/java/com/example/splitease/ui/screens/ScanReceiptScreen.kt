@@ -3,9 +3,13 @@ package com.example.splitease.ui.screens
 import android.Manifest
 import android.content.pm.PackageManager
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -30,6 +34,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import com.example.splitease.navigation.Screen
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -60,6 +67,14 @@ fun ScanReceiptScreen(navController: NavController) {
             launcher.launch(Manifest.permission.CAMERA)
         }
     }
+
+    // Set up ImageCapture
+    val imageCapture = remember { ImageCapture.Builder().build() }
+    val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
+
+    // State for tracking processing
+    var isProcessing by remember { mutableStateOf(false) }
+    var recognizedTextResult by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -109,7 +124,8 @@ fun ScanReceiptScreen(navController: NavController) {
                                     cameraProvider.bindToLifecycle(
                                         lifecycleOwner,
                                         cameraSelector,
-                                        preview
+                                        preview,
+                                        imageCapture // Bind ImageCapture use case
                                     )
                                 } catch (exc: Exception) {
                                     Log.e("CameraPreview", "Use case binding failed", exc)
@@ -146,18 +162,49 @@ fun ScanReceiptScreen(navController: NavController) {
                     // Bottom Right
                     Box(modifier = Modifier.size(40.dp).align(Alignment.BottomEnd).border(4.dp, Color.White, RoundedCornerShape(bottomEnd = 16.dp)))
                 }
+
+                // Show loading overlay when processing
+                if (isProcessing) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(Color.Black.copy(alpha = 0.5f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
             }
 
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = { navController.navigate(Screen.SelectItems.createRoute("SPLIT-123")) },
+                    onClick = { 
+                        if (!isProcessing) {
+                            isProcessing = true
+                            takePhotoAndProcess(imageCapture, cameraExecutor, context) { text ->
+                                isProcessing = false
+                                recognizedTextResult = text
+                                if (text.isNotBlank()) {
+                                    // For now, we log it and move to next screen. 
+                                    // In a full implementation, you'd pass this text to the next screen.
+                                    Log.d("OCR_RESULT", "Extracted Text:\n$text")
+                                    Toast.makeText(context, "Text extracted successfully!", Toast.LENGTH_SHORT).show()
+                                    navController.navigate(Screen.SelectItems.createRoute("SPLIT-123"))
+                                } else {
+                                    Toast.makeText(context, "Could not extract text. Please try again.", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isProcessing
                 ) {
-                    Text("Take Photo", color = Color(0xFF1E3A8A), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text(if (isProcessing) "Processing..." else "Take Photo", color = Color(0xFF1E3A8A), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -166,13 +213,55 @@ fun ScanReceiptScreen(navController: NavController) {
                         .fillMaxWidth()
                         .height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C84FA)),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = !isProcessing
                 ) {
                     Text("Upload from Gallery", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
     }
+}
+
+private fun takePhotoAndProcess(
+    imageCapture: ImageCapture,
+    executor: ExecutorService,
+    context: android.content.Context,
+    onResult: (String) -> Unit
+) {
+    imageCapture.takePicture(
+        executor,
+        object : ImageCapture.OnImageCapturedCallback() {
+            @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+            override fun onCaptureSuccess(imageProxy: ImageProxy) {
+                val mediaImage = imageProxy.image
+                if (mediaImage != null) {
+                    val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                    val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+                    recognizer.process(image)
+                        .addOnSuccessListener { visionText ->
+                            onResult(visionText.text)
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e("OCR_ERROR", "Text recognition failed", e)
+                            onResult("")
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                        }
+                } else {
+                    imageProxy.close()
+                    onResult("")
+                }
+            }
+
+            override fun onError(exception: ImageCaptureException) {
+                Log.e("CAMERA_ERROR", "Photo capture failed: ${exception.message}", exception)
+                onResult("")
+            }
+        }
+    )
 }
 
 @androidx.compose.ui.tooling.preview.Preview(showBackground = true)

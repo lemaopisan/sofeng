@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">SplitEase</string>
+    
+    <!-- Start Screen -->
+    <string name="enter_name">Enter name</string>
+    <string name="get_started">Get Started</string>
+    <string name="receipt_logo_desc">Receipt Logo</string>
+    <string name="check_icon_desc">Check</string>
+
+    <!-- Home Screen -->
+    <string name="hi_user">Hi, %1$s \uD83D\uDC4B</string>
+    <string name="create_new_split">Create New Split</string>
+    <string name="recent_splits">Recent Splits</string>
+    <string name="no_recent_splits">No recent splits yet.</string>
+    <string name="tap_to_get_started">Tap \'Create New Split\' to get started!</string>
+    <string name="status_label">Status: </string>
+    <string name="add_icon_desc">Add</string>
+    <string name="empty_history_desc">Empty History</string>
 </resources>
